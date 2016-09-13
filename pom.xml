@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
-	<parent>
-		<groupId>org.camunda</groupId>
-		<artifactId>camunda-release-parent</artifactId>
-		<version>2.5</version>
-		<relativePath />
-	</parent>
 
 	<groupId>org.camunda.consulting.snippets</groupId>
 	<artifactId>camunda-demo-support</artifactId>
@@ -17,7 +11,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<camunda.version>7.4.0</camunda.version>
+		<camunda.version>7.5.0</camunda.version>
 	</properties>
 
 	<dependencies>
@@ -95,11 +89,28 @@
 		</repository>
 	</repositories>
 
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
 	<scm>
-		<url>https://github.com/camunda/camunda-consulting/tree/master/snippets/camunda-demo-data-generator/camunda-demo-support</url>
-		<connection>scm:git:git@github.com:camunda/camunda-consulting.git</connection>
-		<developerConnection>scm:git:git@github.com:camunda/camunda-consulting.git</developerConnection>
-		<tag>0.1.0</tag>
+		<url>https://github.com/camunda-consulting/camunda-util-demo-support</url>
+		<connection>scm:git:git@github.com:camunda-consulting/camunda-util-demo-support.git</connection>
+		<developerConnection>scm:git:git@github.com:camunda-consulting/camunda-util-demo-support.git</developerConnection>
+		<tag>HEAD</tag>
 	</scm>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>camunda-nexus</id>
+			<url>https://app.camunda.com/nexus/content/repositories/camunda-consulting-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>camunda-nexus</id>
+			<url>https://app.camunda.com/nexus/content/repositories/camunda-consulting/</url>
+		</repository>
+	</distributionManagement>
 </project>
