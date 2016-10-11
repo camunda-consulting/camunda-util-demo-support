@@ -102,17 +102,17 @@ public class DemoDataGeneratorTest {
     processEngine().getRepositoryService().deleteDeployment(deployment.getId(), true);
   }
 
-  @Test
-  public void testModelApiUtf8BugUsingTweak() {
-    org.camunda.bpm.engine.repository.Deployment deployment = processEngine().getRepositoryService().createDeployment() //
-        .addClasspathResource("rechnungseingang.bpmn") //
-        .deploy();
-
-    TimeAwareDemoGenerator generator = new TimeAwareDemoGenerator(processEngine());
-    generator.processDefinitionKey("rechnungseingang").numberOfDaysInPast(5);
-    generator.tweakProcessDefinition();
-    processEngine().getRepositoryService().deleteDeployment(deployment.getId(), true);
-  }
+//  @Test
+//  public void testModelApiUtf8BugUsingTweak() {
+//    org.camunda.bpm.engine.repository.Deployment deployment = processEngine().getRepositoryService().createDeployment() //
+//        .addClasspathResource("rechnungseingang.bpmn") //
+//        .deploy();
+//
+//    TimeAwareDemoGenerator generator = new TimeAwareDemoGenerator(processEngine());
+//    generator.processDefinitionKey("rechnungseingang").numberOfDaysInPast(5);
+//    generator.tweakProcessDefinition();
+//    processEngine().getRepositoryService().deleteDeployment(deployment.getId(), true);
+//  }
 
   @Test
   public void testModelApiBug() {

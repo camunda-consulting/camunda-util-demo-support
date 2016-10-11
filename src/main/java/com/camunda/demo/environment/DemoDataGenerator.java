@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.camunda.bpm.BpmPlatform;
 import org.camunda.bpm.application.ProcessApplicationReference;
 import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.repository.CaseDefinition;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
@@ -19,37 +20,37 @@ public class DemoDataGenerator {
 
   private static final Logger log = Logger.getLogger(DemoDataGenerator.class.getName());
 
-  public static void autoGenerateAll(ProcessEngine engine, ProcessApplicationReference processApplicationReference) {
+  public static void autoGenerateAll(ProcessEngine engine, ProcessApplicationReference processApplicationReference, String... additionalModelKeys) {
     List<ProcessDefinition> processDefinitions = engine.getRepositoryService().createProcessDefinitionQuery().latestVersion().list();
     for (ProcessDefinition processDefinition : processDefinitions) {
-      autoGenerateFor(engine, processDefinition, processApplicationReference);
+      autoGenerateFor(engine, processDefinition, processApplicationReference, additionalModelKeys);
     }
   }
-  
-  public static void autoGenerateFor(ProcessEngine engine, String processDefinitionKey, ProcessApplicationReference processApplicationReference) {
+
+  public static void autoGenerateFor(ProcessEngine engine, String processDefinitionKey, ProcessApplicationReference processApplicationReference, String... additionalModelKeys) {
     ProcessDefinition processDefinition = engine.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey(processDefinitionKey).latestVersion().singleResult();
-    autoGenerateFor(engine, processDefinition, processApplicationReference);    
+    autoGenerateFor(engine, processDefinition, processApplicationReference, additionalModelKeys);        
   }
 
-  public static void autoGenerateFor(ProcessEngine engine, ProcessDefinition processDefinition, ProcessApplicationReference processApplicationReference) {
+  public static void autoGenerateFor(ProcessEngine engine, ProcessDefinition processDefinition, ProcessApplicationReference processApplicationReference, String... additionalModelKeys) {
     log.info("check auto generation for " + processDefinition);
     BpmnModelInstance modelInstance = engine.getRepositoryService().getBpmnModelInstance(processDefinition.getId());
 
     String numberOfDaysInPast = findProperty(modelInstance, "simulateNumberOfDaysInPast");
     if (numberOfDaysInPast != null) {
-      autoGenerateFor(engine, processDefinition, Integer.parseInt(numberOfDaysInPast), null);
+      autoGenerateFor(engine, processDefinition, Integer.parseInt(numberOfDaysInPast), null, additionalModelKeys);
     }
   }
 
-  public static void autoGenerateFor(ProcessEngine engine, String processDefinitionKey, int numberOfDaysInThePast, ProcessApplicationReference processApplicationReference) {
+  public static void autoGenerateFor(ProcessEngine engine, String processDefinitionKey, int numberOfDaysInThePast, ProcessApplicationReference processApplicationReference, String... additionalModelKeys) {
     ProcessDefinition processDefinition = engine.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey(processDefinitionKey).latestVersion().singleResult();
     if (processDefinition==null) {
       throw new RuntimeException("Could not find process definition with key '" + processDefinitionKey + "'");
     }
-    autoGenerateFor(engine, processDefinition, numberOfDaysInThePast, processApplicationReference);    
+    autoGenerateFor(engine, processDefinition, numberOfDaysInThePast, processApplicationReference, additionalModelKeys);    
   }
 
-  public static void autoGenerateFor(ProcessEngine engine, ProcessDefinition processDefinition, int numberOfDaysInPast, ProcessApplicationReference processApplicationReference) {
+  public static void autoGenerateFor(ProcessEngine engine, ProcessDefinition processDefinition, int numberOfDaysInPast, ProcessApplicationReference processApplicationReference, String... additionalModelKeys) {
     BpmnModelInstance modelInstance = engine.getRepositoryService().getBpmnModelInstance(processDefinition.getId());
       // check if not yet existant - we could maybe search for the right process definition version in history 
       // but a simple check works for the moment
@@ -76,6 +77,22 @@ public class DemoDataGenerator {
             .processDefinitionKey(processDefinition.getKey()) //
             .numberOfDaysInPast(Integer.valueOf(numberOfDaysInPast)) //
             .timeBetweenStartsBusinessDays(Integer.valueOf(timeBetweenStartsBusinessDaysMean), Integer.valueOf(timeBetweenStartsBusinessDaysSd));
+        
+        for (String key : additionalModelKeys) {
+          ProcessDefinition pd = engine.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey(key).singleResult();
+          if (pd!=null) {
+            generator.addBpmn(key);
+          } else {
+            CaseDefinition cd = engine.getRepositoryService().createCaseDefinitionQuery().caseDefinitionKey(key).singleResult();
+            if (cd!=null) {
+              generator.addCmmn(key);
+            }
+            else {
+              // ignore for now
+            }  
+          }         
+        }
+        
         generator.generateData();
       }
     

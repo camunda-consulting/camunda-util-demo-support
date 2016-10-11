@@ -16,4 +16,12 @@ public class ProcessApplicationDemoSetup {
       UserDataGenerator.createDefaultUsers(engine);
     }
   }
+
+  public static void executeDefaultSetup(ProcessEngine engine, String processDefinitionKey, ProcessApplicationReference reference, String... additionalModelKeys) {
+    synchronized (engine) {
+      LicenseHelper.setLicense(engine);
+      DemoDataGenerator.autoGenerateFor(engine, processDefinitionKey, 90, reference, additionalModelKeys);
+      UserDataGenerator.createDefaultUsers(engine);
+    }
+  }
 }
