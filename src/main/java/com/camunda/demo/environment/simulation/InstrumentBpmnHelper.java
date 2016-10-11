@@ -42,9 +42,10 @@ public class InstrumentBpmnHelper {
   private ProcessDefinition processDefinition;
   private String originalBpmn;
 
-  public InstrumentBpmnHelper(ProcessEngine engine, String processDefinitionKey) {
+  public InstrumentBpmnHelper(ProcessEngine engine, String processDefinitionKey, ProcessApplicationReference processApplicationReference) {
     this.engine = (ProcessEngineImpl)engine;
     this.processDefinitionKey = processDefinitionKey;
+    this.processApplicationReference = processApplicationReference;
   }
 
   protected void tweakProcessDefinition() {

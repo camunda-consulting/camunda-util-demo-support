@@ -33,9 +33,10 @@ public class InstrumentCmmnHelper {
   private CaseDefinition caseDefinition;
   private String originalCmmn;
 
-  public InstrumentCmmnHelper(ProcessEngine engine, String caseDefinitionKey) {
+  public InstrumentCmmnHelper(ProcessEngine engine, String caseDefinitionKey, ProcessApplicationReference processApplicationReference) {
     this.engine = (ProcessEngineImpl) engine;
     this.caseDefinitionKey = caseDefinitionKey;
+    this.processApplicationReference = processApplicationReference;
   }
 
   protected void tweakCaseDefinition() {
@@ -108,10 +109,13 @@ public class InstrumentCmmnHelper {
     // Bpmn.validateModel(bpmn);
     String xmlString = Cmmn.convertToString(cmmn);
     try {
-      engine.getRepositoryService().createDeployment() //
+      Deployment deployment = engine.getRepositoryService().createDeployment() //
           // .addString(processDefinitionKey + ".bpmn", xmlString) //
           // .addModelInstance(processDefinitionKey + ".bpmn", bpmn) //
           .addInputStream(caseDefinitionKey + ".cmmn", new ByteArrayInputStream(xmlString.getBytes("UTF-8"))).deploy();
+      if (processApplicationReference!=null) {
+        engine.getManagementService().registerProcessApplication(deployment.getId(), processApplicationReference);
+      }
     } catch (Exception ex) {
       throw new RuntimeException("Could not deploy tweaked case definition", ex);
     }

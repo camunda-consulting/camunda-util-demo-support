@@ -61,18 +61,18 @@ public class TimeAwareDemoGenerator {
   }
   
   public void addBpmn(String processDefinitionKey) {
-    InstrumentBpmnHelper bpmn = new InstrumentBpmnHelper(engine, processDefinitionKey);
+    InstrumentBpmnHelper bpmn = new InstrumentBpmnHelper(engine, processDefinitionKey, processApplicationReference);
     bpmn.tweakProcessDefinition();    
     subBpmnList.add(bpmn);
   }
   public void addCmmn(String caseDefinitionKey) {
-    InstrumentCmmnHelper cmmn = new InstrumentCmmnHelper(engine, caseDefinitionKey);
+    InstrumentCmmnHelper cmmn = new InstrumentCmmnHelper(engine, caseDefinitionKey, processApplicationReference);
     cmmn.tweakCaseDefinition();    
     subCmmnList.add(cmmn);
   }
 
   public void generateData() {
-    mainBpmn = new InstrumentBpmnHelper(engine, processDefinitionKey);
+    mainBpmn = new InstrumentBpmnHelper(engine, processDefinitionKey, processApplicationReference);
     mainBpmn.tweakProcessDefinition();
 
     synchronized (engine) {
@@ -208,7 +208,7 @@ public class TimeAwareDemoGenerator {
     boolean piRunning = true;
     while (piRunning) {
       piRunning = false;
-      List<CaseExecution> activeExecutions = engine.getCaseService().createCaseExecutionQuery().active().list();
+      List<CaseExecution> activeExecutions = engine.getCaseService().createCaseExecutionQuery().caseInstanceId(caseInstance.getId()).active().list();
       if (activeExecutions.size() > 0) {
         for (CaseExecution activeExecution : activeExecutions) {
           if (activeExecution.getActivityType().equals("casePlanModel")) {
