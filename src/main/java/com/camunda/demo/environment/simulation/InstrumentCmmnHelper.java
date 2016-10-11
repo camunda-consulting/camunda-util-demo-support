@@ -107,7 +107,6 @@ public class InstrumentCmmnHelper {
 
     // Bpmn.validateModel(bpmn);
     String xmlString = Cmmn.convertToString(cmmn);
-    System.out.println(xmlString);
     try {
       engine.getRepositoryService().createDeployment() //
           // .addString(processDefinitionKey + ".bpmn", xmlString) //
