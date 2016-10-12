@@ -40,16 +40,15 @@ public class TimeAwareDemoGenerator {
 
   private StatisticalDistribution timeBetweenStartsWeekend;
 
-  private InstrumentBpmnHelper mainBpmn;
-
-  private List<InstrumentBpmnHelper> subBpmnList = new ArrayList<InstrumentBpmnHelper>();
-  private List<InstrumentCmmnHelper> subCmmnList = new ArrayList<InstrumentCmmnHelper>();
+  private DemoModelInstrumentator instrumentator;
   
   private ProcessEngine engine;
 
   private Map<String, NormalDistribution> distributions = new HashMap<String, NormalDistribution>();
 
   private ProcessApplicationReference processApplicationReference;
+
+  private String[] additionalModelKeys;
 
   public TimeAwareDemoGenerator(ProcessEngine engine, ProcessApplicationReference processApplicationReference) {
     this.engine = engine;
@@ -58,35 +57,24 @@ public class TimeAwareDemoGenerator {
 
   public TimeAwareDemoGenerator(ProcessEngine processEngine) {
     this.engine = processEngine;
-  }
-  
-  public void addBpmn(String processDefinitionKey) {
-    InstrumentBpmnHelper bpmn = new InstrumentBpmnHelper(engine, processDefinitionKey, processApplicationReference);
-    bpmn.tweakProcessDefinition();    
-    subBpmnList.add(bpmn);
-  }
-  public void addCmmn(String caseDefinitionKey) {
-    InstrumentCmmnHelper cmmn = new InstrumentCmmnHelper(engine, caseDefinitionKey, processApplicationReference);
-    cmmn.tweakCaseDefinition();    
-    subCmmnList.add(cmmn);
-  }
+  }  
+
 
   public void generateData() {
-    mainBpmn = new InstrumentBpmnHelper(engine, processDefinitionKey, processApplicationReference);
-    mainBpmn.tweakProcessDefinition();
+    instrumentator = new DemoModelInstrumentator(engine, processApplicationReference);
+    instrumentator.tweakProcessDefinition(processDefinitionKey); // root process definition
+    if (additionalModelKeys!=null) {
+      instrumentator.addAdditionalModels(additionalModelKeys);
+    }
+    
+    instrumentator.deployTweakedModels();
 
     synchronized (engine) {
       ((ProcessEngineConfigurationImpl) engine.getProcessEngineConfiguration()).getJobExecutor().shutdown();
       try {
         startMultipleProcessInstances();
       } finally {
-        mainBpmn.restoreOriginalProcessDefinition();
-        for (InstrumentBpmnHelper bpmn : subBpmnList) {
-          bpmn.restoreOriginalProcessDefinition();
-        }
-        for (InstrumentCmmnHelper cmmn : subCmmnList) {
-          cmmn.restoreOriginalCaseDefinition();
-        }
+        instrumentator.restoreOriginalModels();
         ((ProcessEngineConfigurationImpl) engine.getProcessEngineConfiguration()).getJobExecutor().start();
       }
     }
@@ -334,13 +322,13 @@ public class TimeAwareDemoGenerator {
       BaseElement taskElement = engine.getRepositoryService().getBpmnModelInstance(pi.getProcessDefinitionId()).getModelElementById(id);
 
       double durationMean = 600; // Default = 10 minutes
-      String camundaPropertyMean = InstrumentBpmnHelper.readCamundaProperty(taskElement, "durationMean");
+      String camundaPropertyMean = DemoModelInstrumentator.readCamundaProperty(taskElement, "durationMean");
       if (camundaPropertyMean != null) {
         durationMean = Double.parseDouble(camundaPropertyMean);
       }
 
       double durationStandardDeviation = 600; // Default also 10 minutes
-      String camundaPropertySd = InstrumentBpmnHelper.readCamundaProperty(taskElement, "durationSd");
+      String camundaPropertySd = DemoModelInstrumentator.readCamundaProperty(taskElement, "durationSd");
       if (camundaPropertySd != null) {
         durationStandardDeviation = Double.parseDouble(camundaPropertySd);
       }
@@ -359,6 +347,11 @@ public class TimeAwareDemoGenerator {
 
   public TimeAwareDemoGenerator processDefinitionKey(String processDefinitionKey) {
     this.processDefinitionKey = processDefinitionKey;
+    return this;
+  }
+
+  public TimeAwareDemoGenerator additionalModelKeys(String... additionalModelKeys) {
+    this.additionalModelKeys = additionalModelKeys;
     return this;
   }
 

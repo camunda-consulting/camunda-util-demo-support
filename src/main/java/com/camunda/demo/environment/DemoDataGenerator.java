@@ -75,24 +75,10 @@ public class DemoDataGenerator {
   
         TimeAwareDemoGenerator generator = new TimeAwareDemoGenerator(BpmPlatform.getDefaultProcessEngine(), processApplicationReference) //
             .processDefinitionKey(processDefinition.getKey()) //
+            .additionalModelKeys(additionalModelKeys) //
             .numberOfDaysInPast(Integer.valueOf(numberOfDaysInPast)) //
             .timeBetweenStartsBusinessDays(Integer.valueOf(timeBetweenStartsBusinessDaysMean), Integer.valueOf(timeBetweenStartsBusinessDaysSd));
-        
-        for (String key : additionalModelKeys) {
-          ProcessDefinition pd = engine.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult();
-          if (pd!=null) {
-            generator.addBpmn(key);
-          } else {
-            CaseDefinition cd = engine.getRepositoryService().createCaseDefinitionQuery().caseDefinitionKey(key).latestVersion().singleResult();
-            if (cd!=null) {
-              generator.addCmmn(key);
-            }
-            else {
-              // ignore for now
-            }  
-          }         
-        }
-        
+                
         generator.generateData();
       }
     

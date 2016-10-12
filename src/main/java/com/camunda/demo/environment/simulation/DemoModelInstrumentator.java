@@ -2,12 +2,17 @@ package com.camunda.demo.environment.simulation;
 
 import java.io.ByteArrayInputStream;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.camunda.bpm.application.ProcessApplicationReference;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.ProcessEngineImpl;
+import org.camunda.bpm.engine.repository.CaseDefinition;
 import org.camunda.bpm.engine.repository.Deployment;
+import org.camunda.bpm.engine.repository.DeploymentBuilder;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
@@ -28,30 +33,95 @@ import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaScript;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaTaskListener;
+import org.camunda.bpm.model.cmmn.Cmmn;
+import org.camunda.bpm.model.cmmn.CmmnModelInstance;
+import org.camunda.bpm.model.cmmn.instance.CasePlanModel;
+import org.camunda.bpm.model.cmmn.instance.DecisionTask;
+import org.camunda.bpm.model.cmmn.instance.HumanTask;
+import org.camunda.bpm.model.cmmn.instance.Sentry;
+import org.camunda.bpm.model.cmmn.instance.camunda.CamundaCaseExecutionListener;
 import org.camunda.bpm.model.xml.ModelInstance;
 import org.camunda.bpm.model.xml.impl.util.IoUtil;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 
-public class InstrumentBpmnHelper {
+public class DemoModelInstrumentator {
 
   private static final Logger log = Logger.getLogger(TimeAwareDemoGenerator.class.getName());
   private ProcessEngineImpl engine;
-  private String processDefinitionKey;
 
   private ProcessApplicationReference processApplicationReference;
-  private ProcessDefinition processDefinition;
-  private String originalBpmn;
 
-  public InstrumentBpmnHelper(ProcessEngine engine, String processDefinitionKey, ProcessApplicationReference processApplicationReference) {
-    this.engine = (ProcessEngineImpl)engine;
-    this.processDefinitionKey = processDefinitionKey;
+  private Map<String, String> originalModels = new HashMap<String, String>();
+  private Map<String, String> tweakedModels = new HashMap<String, String>();
+
+  public DemoModelInstrumentator(ProcessEngine engine, ProcessApplicationReference processApplicationReference) {
+    this.engine = (ProcessEngineImpl) engine;
     this.processApplicationReference = processApplicationReference;
   }
 
-  protected void tweakProcessDefinition() {
+  public void addAdditionalModels(String... additionalModelKeys) {
+    for (String key : additionalModelKeys) {
+      ProcessDefinition pd = engine.getRepositoryService().createProcessDefinitionQuery().processDefinitionKey(key).latestVersion().singleResult();
+      if (pd != null) {
+        addBpmn(key);
+      } else {
+        CaseDefinition cd = engine.getRepositoryService().createCaseDefinitionQuery().caseDefinitionKey(key).latestVersion().singleResult();
+        if (cd != null) {
+          addCmmn(key);
+        } else {
+          // ignore for now
+        }
+      }
+    }
+
+  }
+
+  public void addBpmn(String processDefinitionKey) {
+    tweakProcessDefinition(processDefinitionKey);
+  }
+
+  public void addCmmn(String caseDefinitionKey) {
+    tweakCaseDefinition(caseDefinitionKey);
+  }
+
+  public void deployTweakedModels() {
+    log.finer("Starting deployment of tweaked models for demo data generation");
+    try {
+      DeploymentBuilder deploymentBuilder = engine.getRepositoryService().createDeployment();
+      for (Entry<String, String> model : tweakedModels.entrySet()) {
+        deploymentBuilder.addInputStream(model.getKey(), new ByteArrayInputStream(model.getValue().getBytes("UTF-8")));
+      }
+      Deployment deployment = deploymentBuilder.deploy();
+      if (processApplicationReference != null) {
+        engine.getManagementService().registerProcessApplication(deployment.getId(), processApplicationReference);
+      }
+      log.info("Deployed tweaked modes for demo data generation with deployment " + deployment.getId());
+    } catch (Exception ex) {
+      throw new RuntimeException("Could not deploy tweaked process definition", ex);
+    }
+  }
+
+  public void restoreOriginalModels() {
+    log.finer("Starting to restore models after demo data generation");
+    try {
+      DeploymentBuilder deploymentBuilder = engine.getRepositoryService().createDeployment();
+      for (Entry<String, String> model : originalModels.entrySet()) {
+        deploymentBuilder.addInputStream(model.getKey(), new ByteArrayInputStream(model.getValue().getBytes("UTF-8")));
+      }
+      Deployment deployment = deploymentBuilder.deploy();
+      if (processApplicationReference != null) {
+        engine.getManagementService().registerProcessApplication(deployment.getId(), processApplicationReference);
+      }
+      log.info("Restored original modes after demo data generation with deployment " + deployment.getId());
+    } catch (Exception ex) {
+      throw new RuntimeException("Could not restore original models", ex);
+    }
+  }
+
+  protected String tweakProcessDefinition(String processDefinitionKey) {
     log.info("tweak process definition " + processDefinitionKey);
 
-    processDefinition = engine.getRepositoryService().createProcessDefinitionQuery() //
+    ProcessDefinition processDefinition = engine.getRepositoryService().createProcessDefinitionQuery() //
         .processDefinitionKey(processDefinitionKey) //
         .latestVersion() //
         .singleResult();
@@ -66,9 +136,11 @@ public class InstrumentBpmnHelper {
 
     BpmnModelInstance bpmn = engine.getRepositoryService().getBpmnModelInstance(processDefinition.getId());
 
-    originalBpmn = IoUtil.convertXmlDocumentToString(bpmn.getDocument());
+    String originalBpmn = IoUtil.convertXmlDocumentToString(bpmn.getDocument());
     // do not do a validation here as it caused quite strange trouble
     log.finer("-----\n" + originalBpmn + "\n------");
+
+    originalModels.put(processDefinitionKey + ".bpmn", originalBpmn);
 
     Collection<ModelElementInstance> serviceTasks = bpmn.getModelElementsByType(bpmn.getModel().getType(ServiceTask.class));
     Collection<ModelElementInstance> sendTasks = bpmn.getModelElementsByType(bpmn.getModel().getType(SendTask.class));
@@ -152,14 +224,8 @@ public class InstrumentBpmnHelper {
 
     // Bpmn.validateModel(bpmn);
     String xmlString = Bpmn.convertToString(bpmn);
-    try {
-      engine.getRepositoryService().createDeployment() //
-          // .addString(processDefinitionKey + ".bpmn", xmlString) //
-          // .addModelInstance(processDefinitionKey + ".bpmn", bpmn) //
-          .addInputStream(processDefinitionKey + ".bpmn", new ByteArrayInputStream(xmlString.getBytes("UTF-8"))).deploy();
-    } catch (Exception ex) {
-      throw new RuntimeException("Could not deploy tweaked process definition", ex);
-    }
+    tweakedModels.put(processDefinitionKey + ".bpmn", xmlString);
+    return xmlString;
   }
 
   protected void tweakGateway(ExclusiveGateway xorGateway) {
@@ -206,6 +272,112 @@ public class InstrumentBpmnHelper {
     }
   }
 
+  public String tweakCaseDefinition(String caseDefinitionKey) {
+    log.info("tweak case definition " + caseDefinitionKey);
+
+    CaseDefinition caseDefinition = engine.getRepositoryService().createCaseDefinitionQuery() //
+        .caseDefinitionKey(caseDefinitionKey) //
+        .latestVersion() //
+        .singleResult();
+    if (caseDefinition == null) {
+      throw new RuntimeException("Case with key '" + caseDefinitionKey + "' not found.");
+    }
+    // store original process application reference
+    if (processApplicationReference == null) {
+      processApplicationReference = engine.getProcessEngineConfiguration().getProcessApplicationManager()
+          .getProcessApplicationForDeployment(caseDefinition.getDeploymentId());
+    }
+
+    CmmnModelInstance cmmn = engine.getRepositoryService().getCmmnModelInstance(caseDefinition.getId());
+
+    String originalCmmn = IoUtil.convertXmlDocumentToString(cmmn.getDocument());
+    // do not do a validation here as it caused quite strange trouble
+    log.finer("-----\n" + originalCmmn + "\n------");
+    originalModels.put(caseDefinitionKey + ".cmmn", originalCmmn);
+
+    CasePlanModel casePlanModel = (CasePlanModel) cmmn.getModelElementsByType(cmmn.getModel().getType(CasePlanModel.class)).iterator().next();
+
+    Collection<ModelElementInstance> sentries = cmmn.getModelElementsByType(cmmn.getModel().getType(Sentry.class));
+    Collection<ModelElementInstance> businessRuleTasks = cmmn.getModelElementsByType(cmmn.getModel().getType(DecisionTask.class));
+    Collection<ModelElementInstance> userTasks = cmmn.getModelElementsByType(cmmn.getModel().getType(HumanTask.class));
+
+    for (ModelElementInstance modelElementInstance : sentries) {
+      Sentry sentry = ((Sentry) modelElementInstance);
+      if (sentry.getIfPart() != null && sentry.getIfPart().getCondition() != null) {
+        tweakSentry(casePlanModel, sentry);
+      }
+    }
+    // for (ModelElementInstance modelElementInstance : businessRuleTasks) {
+    // DecisionTask businessRuleTask = (DecisionTask) modelElementInstance;
+    // businessRuleTask.removeAttributeNs("http://activiti.org/bpmn",
+    // "decisionRef");
+    // businessRuleTask.removeAttributeNs("http://camunda.org/schema/1.0/bpmn",
+    // "decisionRef");
+    // businessRuleTask.removeAttributeNs("http://activiti.org/bpmn",
+    // "delegateExpression");
+    // businessRuleTask.removeAttributeNs("http://camunda.org/schema/1.0/bpmn",
+    // "delegateExpression");
+    // businessRuleTask.setDecisionExpression("#{true}"); // Noop
+    // }
+    // for (ModelElementInstance modelElementInstance : executionListeners) {
+    // CamundaExecutionListener executionListener = (CamundaExecutionListener)
+    // modelElementInstance;
+    // // executionListener.setCamundaClass(null);
+    // executionListener.removeAttributeNs("http://activiti.org/bpmn", "class");
+    // executionListener.removeAttributeNs("http://camunda.org/schema/1.0/bpmn",
+    // "class");
+    //
+    // executionListener.removeAttributeNs("http://activiti.org/bpmn",
+    // "delegateExpression");
+    // executionListener.removeAttributeNs("http://camunda.org/schema/1.0/bpmn",
+    // "delegateExpression");
+    // executionListener.setCamundaExpression("#{true}"); // Noop
+    // }
+
+    for (ModelElementInstance modelElementInstance : userTasks) {
+      HumanTask userTask = ((HumanTask) modelElementInstance);
+      userTask.setCamundaAssignee(null);
+      userTask.setCamundaCandidateGroups(null);
+    }
+
+    // Bpmn.validateModel(bpmn);
+    String xmlString = Cmmn.convertToString(cmmn);
+    tweakedModels.put(caseDefinitionKey + ".cmmn", xmlString);
+    return xmlString;
+  }
+
+  protected void tweakSentry(CasePlanModel casePlanModel, Sentry sentry) {
+    CmmnModelInstance cmmn = (CmmnModelInstance) sentry.getModelInstance();
+
+    String var = "SIM_SAMPLE_VALUE_" + sentry.getId().replaceAll("-", "_");
+
+    // let's toggle with a 50/50 for the beginning
+
+    org.camunda.bpm.model.cmmn.instance.ConditionExpression conditionExpression = cmmn
+        .newInstance(org.camunda.bpm.model.cmmn.instance.ConditionExpression.class);
+    conditionExpression.setTextContent("#{" + var + " >= 1 }");
+    sentry.getIfPart().setCondition(conditionExpression);
+
+    // add execution listener to set variable based on random
+    CamundaCaseExecutionListener executionListener = cmmn.newInstance(CamundaCaseExecutionListener.class);
+    executionListener.setCamundaEvent("create");
+    org.camunda.bpm.model.cmmn.instance.camunda.CamundaScript script = cmmn.newInstance(org.camunda.bpm.model.cmmn.instance.camunda.CamundaScript.class);
+    script.setTextContent(//
+        "sample = com.camunda.demo.environment.simulation.StatisticsHelper.nextSample(" + 2 + ");\n" + "caseExecution.setVariable('" + var + "', sample);");
+    script.setCamundaScriptFormat("Javascript");
+    executionListener.setCamundaScript(script);
+
+    // CmmnElementImpl parentElement = (CmmnElementImpl)
+    // sentry.getParentElement();
+
+    if (casePlanModel.getExtensionElements() == null) {
+      ExtensionElements extensionElements = cmmn.newInstance(ExtensionElements.class);
+      casePlanModel.addChildElement(extensionElements);
+    }
+    casePlanModel.getExtensionElements().addChildElement(executionListener);
+
+  }
+
   public static String readCamundaProperty(BaseElement modelElementInstance, String propertyName) {
     if (modelElementInstance.getExtensionElements() == null) {
       return null;
@@ -223,18 +395,4 @@ public class InstrumentBpmnHelper {
     return null;
   }
 
-  public void restoreOriginalProcessDefinition() {
-    log.info("restore original process definition");
-    
-    try {
-      Deployment deployment = engine.getRepositoryService().createDeployment() //
-          .addInputStream(processDefinitionKey + ".bpmn", new ByteArrayInputStream(originalBpmn.getBytes("UTF-8"))) //
-          .deploy();
-      if (processApplicationReference != null) {
-        engine.getManagementService().registerProcessApplication(deployment.getId(), processApplicationReference);
-      }
-    } catch (Exception ex) {
-      throw new RuntimeException("Could not deploy tweaked process definition",  ex);
-    }
-  }
 }
