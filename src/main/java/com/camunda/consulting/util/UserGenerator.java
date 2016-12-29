@@ -1,6 +1,6 @@
-package com.camunda.demo.environment;
+package com.camunda.consulting.util;
 
-import static com.camunda.demo.environment.FilterGenerator.useFilter;
+import static com.camunda.consulting.util.FilterGenerator.useFilter;
 import static org.camunda.bpm.engine.authorization.Authorization.ANY;
 import static org.camunda.bpm.engine.authorization.Authorization.AUTH_TYPE_GRANT;
 import static org.camunda.bpm.engine.authorization.Permissions.ACCESS;

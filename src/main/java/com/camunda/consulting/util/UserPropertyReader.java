@@ -1,4 +1,4 @@
-package com.camunda.demo.environment;
+package com.camunda.consulting.util;
 
 import java.io.File;
 import java.io.FileReader;
