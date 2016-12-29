@@ -12,7 +12,7 @@ public class LicenseHelper {
    * Set license from user home
    */
   public static void setLicense(ProcessEngine processEngine) {
-    String license = UserProperties.readProperty("camunda.license");
+    String license = UserPropertyReader.readProperty("camunda.license");
     if (license != null) {
       setLicense(processEngine, license);
     }

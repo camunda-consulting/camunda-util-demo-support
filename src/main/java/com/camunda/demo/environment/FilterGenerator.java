@@ -10,7 +10,7 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.filter.Filter;
 import org.camunda.bpm.engine.task.TaskQuery;
 
-public class DefaultFilter {
+public class FilterGenerator {
 
   public static String FILTER_myTasks = "FILTER_myTasks";
   public static String FILTER_groupTasksFilter = "FILTER_groupTasksFilter";
@@ -79,10 +79,10 @@ public class DefaultFilter {
       return createFilter(engine, "Alle Aufgaben", 20, "Alle Aufgaben (z.B. für Team-Leiter)", //
           engine.getTaskService().createTaskQuery());
     }
-    throw new RuntimeException("Filter with name '" + filterName + "' not foreseen");
+    throw new RuntimeException("Filter with name '" + filterName + "' not created or foreseen (use FilterGenerator.createFilter to create filter before usage)");
   }
 
-  private static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, String... additionalProperties) {
+  public static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, String... additionalProperties) {
 	 Filter existingFilter = engine.getFilterService().createFilterQuery().filterName(name).singleResult();
 	 if (existingFilter!=null) {
 		 return existingFilter.getId();

@@ -5,9 +5,9 @@ Ass this dependency to your project (available via Maven Central to avoid proble
 
 ```
     <dependency>
-        <groupId>org.camunda.consulting.snippets</groupId>
-        <artifactId>camunda-demo-support</artifactId>
-        <version>0.3.7</version>    
+        <groupId>com.camunda.consulting.util</groupId>
+        <artifactId>camunda-util-demo-support</artifactId>
+        <version>0.4.0</version>    
     </dependency>
 ```
 
@@ -21,8 +21,7 @@ public class MyProcessApplication extends ServletProcessApplication {
   public void setupEnvironmentForDemo(ProcessEngine engine) {
 
     LicenseHelper.setLicense(engine);
-    DemoDataGenerator.autoGenerateFor(engine, "insurance-application", 14, getReference());
-    UserDataGenerator.createDefaultUsers(engine);
+    DataGenerator.createDefaultUsers(engine);
 
     addUser(engine, "ben", "ben", "Ben", "Brooks");
     addGroup(engine, "clerk", "Clerk", "ben");  
@@ -49,11 +48,10 @@ Now the process application will automatically:
 * Create default user "admin" and group "management"
 * Create users & groups as specified (if not already existant)
 * Set the password of created users to the password given + a suffix read from USER-HOME/.camunda/build.properties
-* Create Demo Data for a given time range in the past as described in [Camunda Demo Data Generator](https://github.com/camunda/camunda-consulting/tree/master/snippets/camunda-demo-data-generator)
 
 Configuration
 ---------------
-In order to configure the demo data generation create a file **USER-HOME/.camunda/build.properties**:
+In order to configure the util create a file **USER-HOME/.camunda/build.properties**:
 
 ```
 camunda.license=...(your camunda ee license key)...

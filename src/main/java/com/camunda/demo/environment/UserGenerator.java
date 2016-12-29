@@ -1,6 +1,6 @@
 package com.camunda.demo.environment;
 
-import static com.camunda.demo.environment.DefaultFilter.useFilter;
+import static com.camunda.demo.environment.FilterGenerator.useFilter;
 import static org.camunda.bpm.engine.authorization.Authorization.ANY;
 import static org.camunda.bpm.engine.authorization.Authorization.AUTH_TYPE_GRANT;
 import static org.camunda.bpm.engine.authorization.Permissions.ACCESS;
@@ -21,9 +21,9 @@ import org.camunda.bpm.engine.identity.Group;
 import org.camunda.bpm.engine.identity.User;
 import org.camunda.bpm.engine.impl.persistence.entity.AuthorizationEntity;
 
-public class UserDataGenerator {
+public class UserGenerator {
 
-  private final static Logger LOGGER = Logger.getLogger(UserDataGenerator.class.getName());
+  private final static Logger LOGGER = Logger.getLogger(UserGenerator.class.getName());
   
   public static void createDefaultUsers(ProcessEngine engine) {
     LOGGER.info("Generating default users for showroom");
