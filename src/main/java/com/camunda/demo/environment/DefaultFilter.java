@@ -83,6 +83,10 @@ public class DefaultFilter {
   }
 
   private static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, String... additionalProperties) {
+    return createFilter(engine, name, priority, description, query, new ArrayList<Object>(), additionalProperties);
+  }
+
+  private static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, List<Object> variables, String... additionalProperties) {
 	 Filter existingFilter = engine.getFilterService().createFilterQuery().filterName(name).singleResult();
 	 if (existingFilter!=null) {
 		 return existingFilter.getId();
@@ -103,7 +107,6 @@ public class DefaultFilter {
       }
     }
 
-    List<Object> variables = new ArrayList<Object>();
     filterProperties.put("variables", variables);
 
     Filter myTasksFilter = engine.getFilterService().newTaskFilter() //
