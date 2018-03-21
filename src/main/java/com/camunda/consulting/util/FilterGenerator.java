@@ -82,25 +82,25 @@ public class FilterGenerator {
     throw new RuntimeException("Filter with name '" + filterName + "' not created or foreseen (use FilterGenerator.createFilter to create filter before usage)");
   }
 
-  public static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, String... additionalProperties) {
-    return createFilter(engine, name, priority, description, query, new ArrayList<Object>(), additionalProperties);
+  public static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, Object... additionalProperties) {
+    return createFilter(engine, name, priority, description, query, new ArrayList<Map<String, String>>(), additionalProperties);
   }
 
-  public static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, List<Object> variables, String... additionalProperties) {
-	 Filter existingFilter = engine.getFilterService().createFilterQuery().filterName(name).singleResult();
-	 if (existingFilter!=null) {
-		 return existingFilter.getId();
-	 }
-	  
-	  Map<String, Object> filterProperties = new HashMap<String, Object>();
+  public static String createFilter(ProcessEngine engine, String name, int priority, String description, TaskQuery query, List<Map<String, String>> variables, Object... additionalProperties) {
+    Filter existingFilter = engine.getFilterService().createFilterQuery().filterName(name).singleResult();
+    if (existingFilter!=null) {
+      return existingFilter.getId();
+    }
+     
+    Map<String, Object> filterProperties = new HashMap<String, Object>();
 
     filterProperties.put("description", description);
     filterProperties.put("priority", priority);
 
     String key = null;
-    for (String additionalProperty : additionalProperties) {
+    for (Object additionalProperty : additionalProperties) {
       if (key == null) {
-        key = additionalProperty;
+        key = (String) additionalProperty;
       } else {
         filterProperties.put(key, additionalProperty);
         key = null;
