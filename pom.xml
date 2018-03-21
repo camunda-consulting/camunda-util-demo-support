@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.camunda.consulting.snippets</groupId>
-	<artifactId>camunda-demo-support</artifactId>
-	<version>0.3.8-SNAPSHOT</version>
+	<groupId>com.camunda.consulting.util</groupId>
+	<artifactId>camunda-util-demo-support</artifactId>
+	<version>0.4.1-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
@@ -14,11 +13,11 @@
 		<artifactId>camunda-release-parent</artifactId>
 		<version>2.5</version>
 		<relativePath />
-  </parent>
-  
+	</parent>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<camunda.version>7.5.0</camunda.version>
+		<camunda.version>7.6.0</camunda.version>
 	</properties>
 
 	<dependencies>
@@ -29,62 +28,11 @@
 			<version>${camunda.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<!-- AssertJ Testing Library -->
-			<groupId>org.camunda.bpm.extension</groupId>
-			<artifactId>camunda-bpm-assert</artifactId>
-			<version>1.2</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Required to use Sping dataformat in unit tests -->
-		<dependency>
-			<groupId>org.camunda.spin</groupId>
-			<artifactId>camunda-spin-dataformat-all</artifactId>
-			<version>1.0.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.camunda.bpm</groupId>
-			<artifactId>camunda-engine-plugin-spin</artifactId>
-			<version>${camunda.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
-			<scope>provided</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
 			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<!-- Needed for InMemoryH2Test -->
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>1.4.181</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Add your own dependencies here, if in compile scope, they are added 
-			to the war -->
-		<!-- <dependency> -->
-		<!-- <groupId>desmoj</groupId> -->
-		<!-- <artifactId>desmoj</artifactId> -->
-		<!-- <version>2.1.1</version> -->
-		<!-- </dependency> -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-			<version>3.5</version>
 		</dependency>
 	</dependencies>
 

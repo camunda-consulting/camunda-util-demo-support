@@ -1,4 +1,4 @@
-package com.camunda.demo.environment;
+package com.camunda.consulting.util;
 
 import java.io.File;
 import java.io.FileReader;
@@ -6,9 +6,9 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class UserProperties {
+public class UserPropertyReader {
 
-  private static Logger LOG = Logger.getLogger(UserProperties.class.getName());
+  private static Logger LOG = Logger.getLogger(UserPropertyReader.class.getName());
 
   public static String CONFIG_PROPERTIES_PATH = System.getProperty("user.home") + File.separator + ".camunda" + File.separator + "build.properties";
 
