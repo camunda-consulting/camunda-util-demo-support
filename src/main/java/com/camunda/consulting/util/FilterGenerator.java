@@ -68,8 +68,7 @@ public class FilterGenerator {
     if (FILTER_Ueberfaellig.equals(filterName)) {
       return createFilter(engine, "Überfällig", 10, "Überfällige Aufgaben", //
           engine.getTaskService().createTaskQuery().taskAssigneeExpression("${currentUser()}").dueBeforeExpression("${now()}"), //
-          "color", "#f2dede");
-
+          "color", "#b5152b");
     }
     if (FILTER_PostkorbManagement.equals(filterName)) {
       return createFilter(engine, "Management", 0, "Aufgaben für 'Management'", //
