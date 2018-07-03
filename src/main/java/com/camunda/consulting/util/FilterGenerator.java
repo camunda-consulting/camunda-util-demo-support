@@ -14,6 +14,8 @@ public class FilterGenerator {
 
   public static String FILTER_myTasks = "FILTER_myTasks";
   public static String FILTER_groupTasksFilter = "FILTER_groupTasksFilter";
+  public static String FILTER_followUp = "FILTER_followUp";
+  public static String FILTER_overdue = "FILTER_overdue";
   public static String FILTER_management = "FILTER_management";
   public static String FILTER_allTasksFilter = "FILTER_allTasksFilter";
   public static String FILTER_MeineAufgaben = "FILTER_MeineAufgaben";
@@ -43,6 +45,15 @@ public class FilterGenerator {
     if (FILTER_myTasks.equals(filterName)) {
       return createFilter(engine, "My Tasks", -10, "Tasks assigned to me", // +
           engine.getTaskService().createTaskQuery().taskAssigneeExpression("${currentUser()}"));
+    }
+    if (FILTER_followUp.equals(filterName)) {
+      return createFilter(engine, "Follow-Up", 5, "Task with follow-up date", //
+          engine.getTaskService().createTaskQuery().taskAssigneeExpression("${currentUser()}").followUpAfterExpression("${now()}"));
+    }
+    if (FILTER_overdue.equals(filterName)) {
+      return createFilter(engine, "Overdue", 10, "Overdue Tasks", //
+          engine.getTaskService().createTaskQuery().taskAssigneeExpression("${currentUser()}").dueBeforeExpression("${now()}"), //
+          "color", "#b5152b");
     }
     if (FILTER_management.equals(filterName)) {
       return createFilter(engine, "Management", 0, "Tasks for 'Management'", //
