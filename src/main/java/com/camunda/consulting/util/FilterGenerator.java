@@ -128,4 +128,24 @@ public class FilterGenerator {
     return myTasksFilter.getId();
   }
 
+  public static List<Map<String, String>> createFilterVariables(String... variableNamesOrLabels) {
+    List<Map<String, String>> variables = new ArrayList<Map<String, String>>();
+    for (int i = 0; i < variableNamesOrLabels.length; i += 2) {
+      String name = variableNamesOrLabels[i];
+      String label = name;
+      if (variableNamesOrLabels.length > i + 1) {
+        label = variableNamesOrLabels[i + 1];
+      }
+      variables.add(createFilterVariable(name, label));
+    }
+    return variables;
+  }
+  
+  public static Map<String, String> createFilterVariable(String name, String label) {
+    Map<String, String> variablePrimaryContract = new HashMap<String, String>();
+    variablePrimaryContract.put("name", name);
+    variablePrimaryContract.put("label", label);
+    return variablePrimaryContract;
+  }
+
 }
