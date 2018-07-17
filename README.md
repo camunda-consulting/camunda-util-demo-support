@@ -1,14 +1,14 @@
 Helper to Setup Environment for Demo Use Cases
 =========================
 
-Ass this dependency to your project (available via Maven Central to avoid problems with building demos/showcases):
+Add this dependency to your project (available via Maven Central to avoid problems with building demos/showcases):
 
 ```
-    <dependency>
-        <groupId>com.camunda.consulting.util</groupId>
-        <artifactId>camunda-util-demo-support</artifactId>
-        <version>0.4.2</version>    
-    </dependency>
+<dependency>
+    <groupId>com.camunda.consulting.util</groupId>
+    <artifactId>camunda-util-demo-support</artifactId>
+    <version>0.4.2</version>    
+</dependency>
 ```
 
 Now you can do a couple of things in a @PostDeploy hook of a process application:
