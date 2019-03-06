@@ -7,7 +7,7 @@ Ass this dependency to your project (available via Maven Central to avoid proble
     <dependency>
         <groupId>com.camunda.consulting.util</groupId>
         <artifactId>camunda-util-demo-support</artifactId>
-        <version>0.4.2</version>    
+        <version>0.4.3</version>    
     </dependency>
 ```
 
