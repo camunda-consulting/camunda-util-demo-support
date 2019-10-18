@@ -1,7 +1,7 @@
 Helper to Setup Environment for Demo Use Cases
 =========================
 
-Ass this dependency to your project (available via Maven Central to avoid problems with building demos/showcases):
+As this dependency to your project (available via Maven Central to avoid problems with building demos/showcases):
 
 ```
     <dependency>
