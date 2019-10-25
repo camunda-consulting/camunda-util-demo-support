@@ -9,6 +9,11 @@ As this dependency to your project (available via Maven Central to avoid problem
         <artifactId>camunda-util-demo-support</artifactId>
         <version>0.4.3</version>    
     </dependency>
+
+		<repository>
+			<id>camunda-consulting</id>
+			<url>https://app.camunda.com/nexus/content/repositories/camunda-consulting/</url>
+		</repository>
 ```
 
 Now you can do a couple of things in a @PostDeploy hook of a process application:
