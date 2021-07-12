@@ -62,7 +62,7 @@ camunda.password.suffix=MySecret
 Environment Restrictions
 ------------------------
 
-You need Camunda BPM 7.4.0-alpha2 onwards
+You need Camunda Platform 7.15.0 onwards
 
 
 License
